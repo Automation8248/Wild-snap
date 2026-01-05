@@ -84,15 +84,18 @@ def make_reel():
         "-y",
         "-i", "video.mp4",
         "-i", "music.mp3",
-        "-vf", "scale=1080:1920:force_original_aspect_ratio=cover",
+        "-vf",
+        "scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920",
         "-map", "0:v:0",
         "-map", "1:a:0",
         "-shortest",
         "-c:v", "libx264",
+        "-preset", "fast",
+        "-pix_fmt", "yuv420p",
         "-c:a", "aac",
         "final_reel.mp4"
     ], check=True)
-
+    
 # =============== 4. RANDOM CAPTION =================
 def build_caption():
     title = random.choice(json.load(open("titles.json")))
