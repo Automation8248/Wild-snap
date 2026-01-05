@@ -1,0 +1,50 @@
+name: Animal Reels 
+
+on:
+  schedule:
+    # 9:00 AM New York
+    - cron: '0 14 * * *'
+    # 7:00 PM New York
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt update
+          sudo apt install -y ffmpeg
+
+      - name: Install Python Deps
+        run: |
+          pip install requests
+
+      - name: Run Bot
+        env:
+          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+          FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+        run: |
+          python animal_reels_bot.py
+
+      - name: Commit used video history
+        run: |
+          git config user.name "bot"
+          git config user.email "bot@github.com"
+          git add used_videos.json
+          git commit -m "Update used video history" || echo "No changes"
+          git push
+          
