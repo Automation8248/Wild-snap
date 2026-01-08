@@ -1,47 +1,35 @@
-name: Animal Reels Automation
+name: Daily Video Automation
 
 on:
   schedule:
-    - cron: '0 14 * * *'   # 9 AM New York
-    - cron: '0 0 * * *'    # 7 PM New York
-  workflow_dispatch:
+    - cron: '0 8,20 * * *'  # Runs at 08:00 and 20:00 UTC
+  workflow_dispatch:       # Allows you to run it manually for testing
 
 jobs:
-  post:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: '3.9'
 
       - name: Install FFmpeg
-        run: |
-          sudo apt update
-          sudo apt install -y ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Install Python Dependencies
+      - name: Install dependencies
         run: |
-          pip install requests
+          python -m pip install --upgrade pip
+          pip install requests moviepy
 
-      - name: Run Bot
+      - name: Run Automation Script
         env:
-          PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
-          FREESOUND_API_KEY: ${{ secrets.FREESOUND_API_KEY }}
+          PIXABAY_KEY: ${{ secrets.PIXABAY_KEY }}
+          FREESOUND_KEY: ${{ secrets.FREESOUND_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
-        run: |
-          python animal_reels_bot.py
-
-      - name: Commit used video history
-        run: |
-          git config user.name "bot"
-          git config user.email "bot@github.com"
-          git add used_videos.json
-          git commit -m "Update used video history" || echo "No changes"
-          git push
+        run: python main.py
